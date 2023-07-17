@@ -26,7 +26,13 @@ class _NewItemState extends State<NewItem> {
                   labelText: 'Item Name',
                 ),
                 validator: (value) {
-                  return 'demo';
+                  if (value == null ||
+                      value.isEmpty ||
+                      value.trim().length <= 1 ||
+                      value.trim().length > 50) {
+                    return 'Please enter a valid item name.';
+                  }
+                  return null;
                 },
               ),
               Row(
@@ -39,7 +45,13 @@ class _NewItemState extends State<NewItem> {
                       ),
                       initialValue: '1 ',
                       validator: (value) {
-                        return 'demo';
+                        if (value == null ||
+                            value.isEmpty ||
+                            int.tryParse(value) == null ||
+                            int.tryParse(value)! <= 0) {
+                          return 'Please enter a valid quantity.';
+                        }
+                        return null;
                       },
                     ),
                   ),
