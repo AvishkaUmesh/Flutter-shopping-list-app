@@ -47,34 +47,49 @@ class _GroceryListState extends State<GroceryList> {
       '/shopping-list.json',
     );
 
-    final response = await http.get(url);
-    if (response.statusCode >= 400) {
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode >= 400) {
+        setState(() {
+          _error = 'Failed to load items';
+        });
+        return;
+      }
+
+      if (response.body == 'null') {
+        setState(() {
+          _isLoading = false;
+        });
+        return;
+      }
+      final Map<String, dynamic> listData = json.decode(response.body);
+      final List<GroceryItem> loadedItems = [];
+
+      for (final item in listData.entries) {
+        final category = categories.entries.firstWhere(
+            (element) => element.value.title == item.value['category']);
+
+        loadedItems.add(
+          GroceryItem(
+            id: item.key,
+            name: item.value['name'],
+            quantity: item.value['quantity'],
+            category: category.value,
+          ),
+        );
+      }
+
       setState(() {
-        _error = 'Failed to load items';
+        _groceryItems = loadedItems;
+        _isLoading = false;
+      });
+    } catch (error) {
+      setState(() {
+        _error = 'Something went wrong!';
       });
       return;
     }
-    final Map<String, dynamic> listData = json.decode(response.body);
-    final List<GroceryItem> loadedItems = [];
-
-    for (final item in listData.entries) {
-      final category = categories.entries.firstWhere(
-          (element) => element.value.title == item.value['category']);
-
-      loadedItems.add(
-        GroceryItem(
-          id: item.key,
-          name: item.value['name'],
-          quantity: item.value['quantity'],
-          category: category.value,
-        ),
-      );
-    }
-
-    setState(() {
-      _groceryItems = loadedItems;
-      _isLoading = false;
-    });
   }
 
   void _removeItem(GroceryItem item) async {
